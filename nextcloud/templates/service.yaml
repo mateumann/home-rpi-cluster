@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nextcloud.fullname" . }}
+  namespace: {{ .Values.global.namespace.name | quote}}
+  labels:
+    {{- include "nextcloud.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.nextcloud.service.type }}
+  ports:
+    {{- if .Values.nextcloud.service.http.enabled -}}
+    - port: {{ .Values.nextcloud.service.http.port }}
+      targetPort: {{ .Values.nextcloud.service.http.port }}
+      protocol: TCP
+      name: http
+    {{- end }}
+    {{- if .Values.nextcloud.service.fpm.enabled -}}
+    - port: {{ .Values.nextcloud.service.fpm.port }}
+      targetPort: {{ .Values.nextcloud.service.fpm.port }}
+      protocol: TCP
+      name: fpm
+    {{- end }}
+  selector:
+    {{- include "nextcloud.selectorLabels" . | nindent 4 }}

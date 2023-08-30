@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "nextcloud-data"
+  namespace: {{ .Values.global.namespace.name | quote }}
+  annotations:
+    nfs.io/storage-path: "nextcloud-data"
+spec:
+  storageClassName: {{ .Values.global.persistence.nfsHddStorageClassName | quote }}
+  accessModes:
+    - "ReadWriteMany"
+  resources:
+    requests:
+      storage: "768Gi"

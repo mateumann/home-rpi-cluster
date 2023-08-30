@@ -1,0 +1,40 @@
+{{- if .Values.nextcloud.service.fpm.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fpm
+  namespace: {{ .Values.global.namespace.name | quote }}
+data:
+  www.conf: |
+    [global]
+    daemonize = no
+    error_log = /dev/stderr
+    [www]
+    user = www-data
+    group = www-data
+    listen = {{ .Values.nextcloud.service.fpm.port }}
+    pm = dynamic
+    pm.max_children = 40
+    pm.start_servers = 15
+    pm.min_spare_servers = 15
+    pm.max_spare_servers = 25
+    pm.max_requests = 500
+
+    access.log = /dev/stdout
+    clear_env = no
+    catch_workers_output = yes
+    decorate_workers_output = no
+
+    php_admin_value[upload_max_filesize] = 5120M
+    php_admin_value[error_log] = /var/log/fpm-php.www.log
+    php_admin_value[post_max_size] = 5120M
+    php_admin_value[memory_limit] = 512M
+    php_admin_value[upload_tmp_dir] = /var/www/html/data/tmp
+
+    php_admin_flag[log_errors] = off
+    php_flag[display_errors] = off
+
+    php_admin_value[opcache.save_comments] = 1
+    php_admin_value[opcache.revalidate_freq] = 60
+    php_admin_value[opcache.jit] = 1255
+    php_admin_value[opcache.jit_buffer_size] = 128M

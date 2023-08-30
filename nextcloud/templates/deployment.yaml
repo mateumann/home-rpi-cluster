@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nextcloud.fullname" . }}
+  namespace: {{ .Values.global.namespace.name | quote }}
+  labels:
+    {{- include "nextcloud.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.nextcloud.autoscaling.enabled }}
+  replicas: {{ .Values.nextcloud.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nextcloud.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.nextcloud.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nextcloud.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nextcloud.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.nextcloud.podSecurityContext | nindent 8 }}
+      containers:
+        {{- if .Values.nextcloud.service.http.enabled -}}
+        - name: nginx
+          image: nginx:1.25.1-alpine
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 16Mi
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+            - name: nextcloud-app
+              mountPath: /var/www/html
+            - name: nextcloud-data
+              mountPath: /var/www/html/data
+            - name: nextcloud-tmp
+              mountPath: /var/tmp/nginx
+          ports:
+            - containerPort: {{ .Values.nextcloud.service.http.port }}
+        {{- end }}
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.nextcloud.image.name }}:{{ .Values.nextcloud.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.nextcloud.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.nextcloud.service.fpm.port }}
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          #readinessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          resources:
+            {{- toYaml .Values.nextcloud.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

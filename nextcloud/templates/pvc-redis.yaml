@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "redis"
+  namespace: {{ .Values.global.namespace.name | quote }}
+spec:
+  storageClassName: "manual"
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "256Gi"
+  volumeName: "nextcloud-redis"

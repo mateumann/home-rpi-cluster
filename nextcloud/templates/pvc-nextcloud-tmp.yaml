@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "nextcloud-tmp"
+  namespace: {{ .Values.global.namespace.name | quote }}
+spec:
+  storageClassName: "manual"
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "8Gi"
+  volumeName: "nextcloud-tmp"

@@ -1,0 +1,154 @@
+---
+# -- Global parameters group
+# -- @default -- object
+global:
+  # -- Parameter group for the namespace
+  # -- @default -- object
+  namespace:
+    # -- Should a namespace be created
+    create: "true"
+    # -- Specify a name of a namespace to create and deploy resources to
+    name: "nextcloud"
+  # -- Parameter group for the container images
+  # @default -- object
+  image:
+    # -- Container images registry
+    registry: "docker.io"
+    # -- Specify a imagePullPolicy (can be overridden for each microservice), defaults to 'Always'
+    # -- if image tag is 'latest', else set to 'IfNotPresent'.
+    # -- ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    pullPolicy: &pullPolicy "IfNotPresent"
+    # -- Specify secrets used for pulling container images
+    pullSecrets: []
+  # -- Parameter group for the persistence
+  # @default -- object
+  persistence:
+    nfsHddStorageClassName: forlond-1-nfs-client
+
+  # -- Parameter group for the metrics
+  # @default -- object
+  metrics:
+    # -- Specify if metrics should be enabled by default
+    enabled: &metrics "false"
+
+# -- Parameters group for service account.
+# @default -- object
+serviceAccount:
+  create: "false"
+  annotations: {}
+
+securityContext: {}
+
+# -- Parameters group for nextcloud installation.
+# @default -- object
+nextcloud:
+  replicaCount: 1
+  image:
+    name: "nextcloud"
+    tag: 27.0.2-fpm-alpine
+    pullPolicy: *pullPolicy
+  autoscaling:
+    enabled: "false"
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 80
+  service:
+    type: "LoadBalancer"
+    http:
+      enabled: "true"
+      port: 80
+    fpm:
+      enabled: "true"
+      port: 9000
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1536Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+  nodeSelector: {}
+  affinity:
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: "pictaviensis.regnum/storage"
+                  operator: In
+                  values:
+                    - "true"
+            topologyKey: kubernetes.io/hostname
+          weight: 60
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: "app.kubernetes.io/name"
+                    operator: In
+                    values:
+                      - "nextcloud"
+              topologyKey: kubernetes.io/hostname
+            weight: 20
+  podAnnotations: {}
+  podSecurityContext: {}
+
+# -- Parameters group for bitnami/postgresql helm chart.
+# ref: https://github.com/bitnami/charts/blob/main/bitnami/postgresql/README.md
+# @default -- object
+postgresql:
+  enabled: "true"
+  # fullnameOverride: postgresql
+  auth:
+    existingSecret: "postgresql"  # pragma: allowlist secret
+    database: "nextcloud"
+  image:
+    tag: "15.4.0-alpine"
+    pullPolicy: *pullPolicy
+  containerPorts:
+    postgresql: 5432
+  primary:
+    nodeSelector:
+      machine.pictaviensis.regnum/type: "raspberry-pi-4b-large"
+      storage.pictaviensis.regnum/ssd-speed: "fast"
+    persistence:
+      existingClaim: "postgresql"
+    resources:
+      limits:
+        memory: "1Gi"
+        cpu: 2
+      requests:
+        memory: "256Mi"
+        cpu: 0.5
+  metrics:
+    enabled: *metrics
+
+
+# -- Parameters group for bitnami/redis helm chart.
+# ref: https://github.com/bitnami/charts/blob/main/bitnami/redis/README.md
+# @default -- object
+redis:
+  enabled: "true"
+  # fullnameOverride: postgresql
+  image:
+    tag: "7.2.0-alpine"
+    pullPolicy: *pullPolicy
+  containerPorts:
+    postgresql: 6379
+  master:
+    nodeSelector:
+      storage.pictaviensis.regnum/ssd-speed: "fast"
+    persistence:
+      existingClaim: "redis"
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+      requests:
+        memory: "64Mi"
+        cpu: "100m"
+  metrics:
+    enabled: *metrics
+

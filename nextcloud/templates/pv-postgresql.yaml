@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "nextcloud-postgresql"
+spec:
+  storageClassName: "manual"
+  volumeMode: "Filesystem"
+  accessModes:
+    - "ReadWriteOnce"
+  persistentVolumeReclaimPolicy: "Retain"
+  capacity:
+    storage: "4Gi"
+  hostPath:
+    path: "/mnt/ssd/nextcloud-postgresql"
