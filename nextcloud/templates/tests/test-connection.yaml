@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "nextcloud.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "nextcloud.fullname" . }}:{{ .Values.nextcloud.service.http.port }}']
   restartPolicy: Never

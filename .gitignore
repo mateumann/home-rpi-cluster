@@ -2,3 +2,5 @@
 # Chart dependencies
 **/charts/*.tgz
 
+### Secrets
+**/templates/secret*.yaml
