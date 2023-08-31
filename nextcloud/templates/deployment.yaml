@@ -25,11 +25,13 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "nextcloud.serviceAccountName" . }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "nextcloud.serviceAccountName" . | quote }}
+      {{- end }}
       securityContext:
         {{- toYaml .Values.nextcloud.podSecurityContext | nindent 8 }}
       containers:
-        {{- if .Values.nextcloud.service.http.enabled -}}
+        {{- if .Values.nextcloud.service.http.enabled }}
         - name: nginx
           image: nginx:1.25.1-alpine
           resources:
@@ -68,6 +70,22 @@ spec:
           #    port: http
           resources:
             {{- toYaml .Values.nextcloud.resources | nindent 12 }}
+      volumes:
+        - name: fpm-config
+          configMap:
+            name: fpm
+        - name: nginx-config
+          configMap:
+            name: nginx
+        - name: nextcloud-app
+          persistentVolumeClaim:
+            claimName: nextcloud-app
+        - name: nextcloud-data
+          persistentVolumeClaim:
+            claimName: nextcloud-data
+        - name: nextcloud-tmp
+          persistentVolumeClaim:
+            claimName: nextcloud-tmp
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

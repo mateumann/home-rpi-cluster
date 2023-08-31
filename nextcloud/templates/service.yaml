@@ -8,13 +8,13 @@ metadata:
 spec:
   type: {{ .Values.nextcloud.service.type }}
   ports:
-    {{- if .Values.nextcloud.service.http.enabled -}}
+    {{- if .Values.nextcloud.service.http.enabled }}
     - port: {{ .Values.nextcloud.service.http.port }}
       targetPort: {{ .Values.nextcloud.service.http.port }}
       protocol: TCP
       name: http
     {{- end }}
-    {{- if .Values.nextcloud.service.fpm.enabled -}}
+    {{- if .Values.nextcloud.service.fpm.enabled }}
     - port: {{ .Values.nextcloud.service.fpm.port }}
       targetPort: {{ .Values.nextcloud.service.fpm.port }}
       protocol: TCP

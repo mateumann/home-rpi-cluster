@@ -33,6 +33,7 @@ global:
 
 # -- Parameters group for service account.
 # @default -- object
+serviceAccount:
   create: false
   name: "nextcloud"
   annotations: {}
