@@ -64,18 +64,18 @@ spec:
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  key: db
                   name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                  key: db
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  key: user
-                  name: secret-seaweedfs-db {{ .Values.postgresql.auth.existingSecret | quote }}
+                  name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                  key: username
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  key: password
-                  name: postgresql {{ .Values.postgresql.auth.existingSecret | quote }}
+                  name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                  key: postgres-password
             - name: PHP_UPLOAD_LIMIT
               value: 5120M
             - name: PHP_POST_LIMIT

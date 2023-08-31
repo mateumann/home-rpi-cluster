@@ -68,10 +68,10 @@ nextcloud:
         - podAffinityTerm:
             labelSelector:
               matchExpressions:
-                - key: "pictaviensis.regnum/storage"
+                - key: "storage.pictaviensis.regnum/ssd-speed"
                   operator: In
                   values:
-                    - true
+                    - "fast"
             topologyKey: kubernetes.io/hostname
           weight: 60
       podAntiAffinity:
@@ -109,7 +109,7 @@ postgresql:
     existingSecret: "postgresql"  # pragma: allowlist secret
     database: "nextcloud"
   image:
-    tag: "15.4.0-alpine"
+    tag: "15.4.0"
     pullPolicy: *pullPolicy
   containerPorts:
     postgresql: 5432
@@ -137,7 +137,7 @@ redis:
   enabled: true
   # fullnameOverride: postgresql
   image:
-    tag: "7.2.0-alpine"
+    tag: "7.2.0"
     pullPolicy: *pullPolicy
   containerPorts:
     postgresql: 6379

@@ -8,5 +8,5 @@ spec:
     - "ReadWriteOnce"
   resources:
     requests:
-      storage: "256Gi"
+      storage: "256Mi"
   volumeName: "nextcloud-redis"
