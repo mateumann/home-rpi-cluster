@@ -6,7 +6,7 @@ global:
   # -- @default -- object
   namespace:
     # -- Should a namespace be created
-    create: "true"
+    create: true
     # -- Specify a name of a namespace to create and deploy resources to
     name: "nextcloud"
   # -- Parameter group for the container images
@@ -29,12 +29,11 @@ global:
   # @default -- object
   metrics:
     # -- Specify if metrics should be enabled by default
-    enabled: &metrics "false"
+    enabled: &metrics false
 
 # -- Parameters group for service account.
 # @default -- object
-serviceAccount:
-  create: "false"
+  create: false
   name: "nextcloud"
   annotations: {}
 
@@ -49,7 +48,7 @@ nextcloud:
     tag: 27.0.2-fpm-alpine
     pullPolicy: *pullPolicy
   autoscaling:
-    enabled: "false"
+    enabled: false
     minReplicas: 1
     maxReplicas: 4
     targetCPUUtilizationPercentage: 50
@@ -57,10 +56,10 @@ nextcloud:
   service:
     type: "LoadBalancer"
     http:
-      enabled: "true"
+      enabled: true
       port: 80
     fpm:
-      enabled: "true"
+      enabled: true
       port: 9000
   resources:
     limits:
@@ -79,7 +78,7 @@ nextcloud:
                 - key: "pictaviensis.regnum/storage"
                   operator: In
                   values:
-                    - "true"
+                    - true
             topologyKey: kubernetes.io/hostname
           weight: 60
       podAntiAffinity:
@@ -100,7 +99,7 @@ nextcloud:
 # ref: https://github.com/bitnami/charts/blob/main/bitnami/postgresql/README.md
 # @default -- object
 postgresql:
-  enabled: "true"
+  enabled: true
   # fullnameOverride: postgresql
   auth:
     existingSecret: "postgresql"  # pragma: allowlist secret
@@ -131,7 +130,7 @@ postgresql:
 # ref: https://github.com/bitnami/charts/blob/main/bitnami/redis/README.md
 # @default -- object
 redis:
-  enabled: "true"
+  enabled: true
   # fullnameOverride: postgresql
   image:
     tag: "7.2.0-alpine"
