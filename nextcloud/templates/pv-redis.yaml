@@ -3,7 +3,7 @@ kind: PersistentVolume
 metadata:
   name: "nextcloud-redis"
 spec:
-  storageClassName: "manual"
+  storageClassName: "local-storage"
   volumeMode: "Filesystem"
   accessModes:
     - "ReadWriteOnce"
