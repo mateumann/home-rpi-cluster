@@ -74,17 +74,17 @@ nextcloud:
                     - "fast"
             topologyKey: kubernetes.io/hostname
           weight: 60
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: "app.kubernetes.io/name"
-                    operator: In
-                    values:
-                      - "nextcloud"
-              topologyKey: kubernetes.io/hostname
-            weight: 20
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: "app.kubernetes.io/name"
+                  operator: In
+                  values:
+                    - "nextcloud"
+            topologyKey: kubernetes.io/hostname
+          weight: 20
   tolerations: {}
   podAnnotations: {}
   podSecurityContext: {}
@@ -107,6 +107,7 @@ postgresql:
   # fullnameOverride: postgresql
   auth:
     existingSecret: "postgresql"  # pragma: allowlist secret
+    #username: "nextcloud"
     database: "nextcloud"
   image:
     tag: "15.4.0"
@@ -136,7 +137,7 @@ postgresql:
         command:
           - "sh"
           - "-c"
-          - "chmod 0700 /bitnami/postgresql && chown 1001:1001 /bitnami/postgresql"
+          - "chown 1001 /bitnami/postgresql"
   metrics:
     enabled: *metrics
 
@@ -164,6 +165,17 @@ redis:
       requests:
         memory: "64Mi"
         cpu: "100m"
+    initContainers:
+      - name: volume-data-perms
+        image: busybox
+        imagePullPolicy: *pullPolicy
+        volumeMounts:
+          - name: redis-data
+            mountPath: "/data"
+        command:
+          - "sh"
+          - "-c"
+          - "chown 1001 /data"
   replica:
     replicaCount: 0
   metrics:

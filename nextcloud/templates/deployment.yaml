@@ -62,10 +62,7 @@ spec:
             - name: POSTGRES_HOST
               value: postgres # FIXME
             - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.postgresql.auth.existingSecret | quote }}
-                  key: db
+              value: {{ .Values.postgresql.auth.database | quote }}
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -75,7 +72,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.postgresql.auth.existingSecret | quote }}
-                  key: postgres-password
+                  key: password
             - name: PHP_UPLOAD_LIMIT
               value: 5120M
             - name: PHP_POST_LIMIT
