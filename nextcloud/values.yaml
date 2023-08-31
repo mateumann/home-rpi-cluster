@@ -126,6 +126,17 @@ postgresql:
       requests:
         memory: "256Mi"
         cpu: 0.5
+    initContainers:
+      - name: volume-data-perms
+        image: busybox
+        imagePullPolicy: *pullPolicy
+        volumeMounts:
+          - name: data
+            mountPath: "/bitnami/postgresql"
+        command:
+          - "sh"
+          - "-c"
+          - "chmod 0700 /bitnami/postgresql && chown 1001:1001 /bitnami/postgresql"
   metrics:
     enabled: *metrics
 
