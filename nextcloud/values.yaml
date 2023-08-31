@@ -104,10 +104,9 @@ nginx:
 # @default -- object
 postgresql:
   enabled: true
-  # fullnameOverride: postgresql
   auth:
     existingSecret: "postgresql"  # pragma: allowlist secret
-    #username: "nextcloud"
+    username: "nextcloud"
     database: "nextcloud"
   image:
     tag: "15.4.0"
@@ -147,7 +146,6 @@ postgresql:
 # @default -- object
 redis:
   enabled: true
-  # fullnameOverride: postgresql
   image:
     tag: "7.2.0"
     pullPolicy: *pullPolicy
