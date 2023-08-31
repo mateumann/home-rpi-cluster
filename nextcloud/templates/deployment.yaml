@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "nextcloud.fullname" . }}
-  namespace: {{ .Values.global.namespace.name | quote }}
   labels:
     {{- include "nextcloud.labels" . | nindent 4 }}
 spec:

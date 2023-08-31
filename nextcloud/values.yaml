@@ -2,13 +2,6 @@
 # -- Global parameters group
 # -- @default -- object
 global:
-  # -- Parameter group for the namespace
-  # -- @default -- object
-  namespace:
-    # -- Should a namespace be created
-    create: true
-    # -- Specify a name of a namespace to create and deploy resources to
-    name: "nextcloud"
   # -- Parameter group for the container images
   # @default -- object
   image:
