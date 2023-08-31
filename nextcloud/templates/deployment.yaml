@@ -58,9 +58,11 @@ spec:
               mountPath: /var/www/html/data
           env:
             - name: REDIS_HOST
-              value: redis  # FIXME
+              value: {{ printf "%s-master" (include "common.names.fullname" .) }}
+              # charts/redis-18.0.1.tgz!/redis/charts/common/templates/_names.tpl:26
             - name: POSTGRES_HOST
-              value: postgres # FIXME
+              value: {{ include "postgresql.primary.fullname" . }}
+              # charts/postgresql-12.10.0.tgz!/postgresql/templates/_helpers.tpl:12
             - name: POSTGRES_DB
               value: {{ .Values.postgresql.auth.database | quote }}
             - name: POSTGRES_USER
