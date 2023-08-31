@@ -9,6 +9,6 @@ spec:
     - "ReadWriteOnce"
   persistentVolumeReclaimPolicy: "Delete"
   capacity:
-    storage: "8Gi"
+    storage: "6Gi"
   hostPath:
     path: "/mnt/ssd/nextcloud-tmp"
