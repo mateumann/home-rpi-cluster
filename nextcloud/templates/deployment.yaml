@@ -58,11 +58,9 @@ spec:
               mountPath: /var/www/html/data
           env:
             - name: REDIS_HOST
-              value: {{ printf "%s-master" (include "common.names.fullname" .) }}
-              # charts/redis-18.0.1.tgz!/redis/charts/common/templates/_names.tpl:26
+              value: nextcloud-redis-master  # FIXME
             - name: POSTGRES_HOST
-              value: {{ include "postgresql.primary.fullname" . }}
-              # charts/postgresql-12.10.0.tgz!/postgresql/templates/_helpers.tpl:12
+              value: nextcloud-postgres  # FIXME
             - name: POSTGRES_DB
               value: {{ .Values.postgresql.auth.database | quote }}
             - name: POSTGRES_USER

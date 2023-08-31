@@ -146,6 +146,8 @@ postgresql:
 # @default -- object
 redis:
   enabled: true
+  auth:
+    enabled: false
   image:
     tag: "7.2.0"
     pullPolicy: *pullPolicy

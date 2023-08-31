@@ -4,6 +4,9 @@ metadata:
   name: {{ include "nextcloud.fullname" . }}
   labels:
     {{- include "nextcloud.labels" . | nindent 4 }}
+  annotations:
+    metallb.universe.tf/address-pool: nextcloud
+    metallb.universe.tf/allow-shared-ip: nextcloud-svc
 spec:
   type: {{ .Values.nextcloud.service.type }}
   ports:
