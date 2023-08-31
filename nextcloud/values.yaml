@@ -35,6 +35,7 @@ global:
 # @default -- object
 serviceAccount:
   create: "false"
+  name: "nextcloud"
   annotations: {}
 
 securityContext: {}
