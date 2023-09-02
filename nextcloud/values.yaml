@@ -88,6 +88,14 @@ nextcloud:
   tolerations: {}
   podAnnotations: {}
   podSecurityContext: {}
+  cronjob:
+    enabled: true
+    suspend: false
+    schedule: "*/10 * * * *"
+    successfulJobsHistoryLimit: 1
+    restartPolicy: OnFailure
+    nodeSelector: {}
+
 
 # -- Parameters group for nginx sidecar installation.
 # @default -- object

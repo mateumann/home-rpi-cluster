@@ -1,0 +1,103 @@
+{{- if .Values.nextcloud.cronjob.enabled -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "nextcloud.fullname" . }}
+  labels:
+    {{- include "nextcloud.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.nextcloud.cronjob.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.nextcloud.cronjob.successfulJobsHistoryLimit | default 3 }}
+  suspend: {{ .Values.nextcloud.cronjob.suspend }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- with .Values.global.image.pullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          containers:
+            - name: nextcloud
+              image: nextcloud:27.0.2-fpm-alpine
+              imagePullPolicy: IfNotPresent
+              securityContext:
+                runAsNonRoot: false
+              command:
+                - /bin/sh
+                - -c
+                - date && apk add sudo perl &&
+                  echo -n "Executing Nextcloud's cron job at " && date &&
+                  sudo -u '#82' php -d memory_limit=-1 -f /var/www/html/cron.php &&
+                  echo "Done" &&
+                  echo -n "Syncing email at " && date &&
+                  sudo -u '#82' php -d memory_limit=-1 -f /var/www/html/occ
+                  mail:account:sync 1 &&
+                  sudo -u '#82' php -d memory_limit=-1 -f /var/www/html/occ
+                  mail:clean-up &&
+                  echo "Done" && date
+              resources:
+                limits:
+                  cpu: 2500m
+                  memory: 2048Mi
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+              volumeMounts:
+                - name: fpm-config
+                  mountPath: /usr/local/etc/php-fpm.d
+                - name: nextcloud-app
+                  mountPath: /var/www/html
+                - name: nextcloud-data
+                  mountPath: /var/www/html/data
+              env:
+                - name: REDIS_HOST
+                  value: nextcloud-redis-master  # FIXME
+                - name: POSTGRES_HOST
+                  value: nextcloud-postgres  # FIXME
+                - name: POSTGRES_DB
+                  value: {{ .Values.postgresql.auth.database | quote }}
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                      key: username
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                      key: password
+                - name: PHP_UPLOAD_LIMIT
+                  value: 5120M
+                - name: PHP_POST_LIMIT
+                  value: 5120M
+                - name: NEXTCLOUD_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: nextcloud-admin
+                      key: username
+                - name: NEXTCLOUD_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: nextcloud-admin
+                      key: password
+                - name: OVERWRITEHOST
+                  value: cloud.neumanny.live
+                - name: OVERWRITEPROTOCOL
+                  value: https
+          volumes:
+            - name: fpm-config
+              configMap:
+                name: fpm
+            - name: nextcloud-app
+              persistentVolumeClaim:
+                claimName: nextcloud-app
+            - name: nextcloud-data
+              persistentVolumeClaim:
+                claimName: nextcloud-data
+          {{- with .Values.nextcloud.cronjob.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          restartPolicy: {{ .Values.nextcloud.cronjob.restartPolicy | default "OnFailure" | quote }}
+{{- end }}
