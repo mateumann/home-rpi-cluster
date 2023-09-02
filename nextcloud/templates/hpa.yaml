@@ -1,5 +1,5 @@
 {{- if .Values.nextcloud.autoscaling.enabled }}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "nextcloud.fullname" . }}
@@ -10,19 +10,26 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ include "nextcloud.fullname" . }}
-  minReplicas: {{ .Values.nextcloud.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.nextcloud.autoscaling.maxReplicas }}
+  {{- with .Values.nextcloud.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   metrics:
-    {{- if .Values.nextcloud.autoscaling.targetCPUUtilizationPercentage }}
+    {{- if .Values.nextcloud.autoscaling.averageCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.nextcloud.autoscaling.targetCPUUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.nextcloud.autoscaling.averageCPUUtilizationPercentage }}
     {{- end }}
-    {{- if .Values.nextcloud.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- if .Values.nextcloud.autoscaling.averageMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
-        targetAverageUtilization: {{ .Values.nextcloud.autoscaling.targetMemoryUtilizationPercentage }}
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.nextcloud.autoscaling.averageMemoryUtilizationPercentage }}
     {{- end }}
 {{- end }}

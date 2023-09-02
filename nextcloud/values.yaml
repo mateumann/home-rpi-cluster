@@ -44,17 +44,14 @@ nextcloud:
   autoscaling:
     enabled: false
     minReplicas: 1
-    maxReplicas: 4
-    targetCPUUtilizationPercentage: 50
-    targetMemoryUtilizationPercentage: 80
-  service:
-    type: "LoadBalancer"
-    http:
-      enabled: true
-      port: 80
-    fpm:
-      enabled: true
-      port: 9000
+    maxReplicas: 8
+    averageCPUUtilizationPercentage: 60
+    averageMemoryUtilizationPercentage: 60
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+      scaleUp:
+        stabilizationWindowSeconds: 300
   resources:
     limits:
       cpu: 2000m
