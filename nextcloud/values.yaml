@@ -31,6 +31,8 @@ serviceAccount:
   name: "nextcloud"
   annotations: {}
 
+podSecurityContext: {}
+
 # -- Parameters group for nextcloud installation.
 # @default -- object
 nextcloud:
@@ -42,25 +44,21 @@ nextcloud:
   autoscaling:
     enabled: false
     minReplicas: 1
-    maxReplicas: 4
-    targetCPUUtilizationPercentage: 50
-    targetMemoryUtilizationPercentage: 80
-  service:
-    type: "LoadBalancer"
-    http:
-      enabled: true
-      port: 80
-    fpm:
-      enabled: true
-      port: 9000
+    maxReplicas: 8
+    averageCPUUtilizationPercentage: 60
+    averageMemoryUtilizationPercentage: 60
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 300
+      scaleUp:
+        stabilizationWindowSeconds: 300
   resources:
     limits:
       cpu: 2000m
       memory: 1536Mi
     requests:
       cpu: 200m
-      memory: 256Mi
-  securityContext: {}
+      memory: 512Mi
   nodeSelector: {}
   affinity:
     podAffinity:
@@ -87,7 +85,25 @@ nextcloud:
           weight: 20
   tolerations: {}
   podAnnotations: {}
-  podSecurityContext: {}
+  securityContext:
+    runAsNonRoot: false
+    # runAsUser: 82
+  service:
+    type: "LoadBalancer"
+    http:
+      enabled: true
+      port: 80
+    fpm:
+      enabled: true
+      port: 9000
+  cronjob:
+    enabled: true
+    suspend: false
+    schedule: "*/10 * * * *"
+    successfulJobsHistoryLimit: 1
+    restartPolicy: OnFailure
+    nodeSelector: {}
+
 
 # -- Parameters group for nginx sidecar installation.
 # @default -- object
@@ -96,7 +112,8 @@ nginx:
     name: "nginx"
     tag: 1.25.1-alpine
     pullPolicy: *pullPolicy
-  securityContext: {}
+  securityContext:
+    runAsNonRoot: false
 
 
 # -- Parameters group for bitnami/postgresql helm chart.
@@ -114,9 +131,7 @@ postgresql:
   containerPorts:
     postgresql: 5432
   primary:
-    nodeSelector:
-      machine.pictaviensis.regnum/type: "raspberry-pi-4b-large"
-      storage.pictaviensis.regnum/ssd-speed: "fast"
+    nodeSelector: {}
     persistence:
       existingClaim: "postgresql"
     resources:
@@ -154,8 +169,7 @@ redis:
   containerPorts:
     postgresql: 6379
   master:
-    nodeSelector:
-      storage.pictaviensis.regnum/ssd-speed: "fast"
+    nodeSelector: {}
     persistence:
       existingClaim: "redis"
     resources:
