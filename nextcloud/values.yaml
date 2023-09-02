@@ -31,6 +31,8 @@ serviceAccount:
   name: "nextcloud"
   annotations: {}
 
+podSecurityContext: {}
+
 # -- Parameters group for nextcloud installation.
 # @default -- object
 nextcloud:
@@ -59,8 +61,7 @@ nextcloud:
       memory: 1536Mi
     requests:
       cpu: 200m
-      memory: 256Mi
-  securityContext: {}
+      memory: 512Mi
   nodeSelector: {}
   affinity:
     podAffinity:
@@ -87,7 +88,17 @@ nextcloud:
           weight: 20
   tolerations: {}
   podAnnotations: {}
-  podSecurityContext: {}
+  securityContext:
+    runAsNonRoot: false
+    # runAsUser: 82
+  service:
+    type: "LoadBalancer"
+    http:
+      enabled: true
+      port: 80
+    fpm:
+      enabled: true
+      port: 9000
   cronjob:
     enabled: true
     suspend: false
@@ -104,7 +115,8 @@ nginx:
     name: "nginx"
     tag: 1.25.1-alpine
     pullPolicy: *pullPolicy
-  securityContext: {}
+  securityContext:
+    runAsNonRoot: false
 
 
 # -- Parameters group for bitnami/postgresql helm chart.
@@ -122,9 +134,7 @@ postgresql:
   containerPorts:
     postgresql: 5432
   primary:
-    nodeSelector:
-      machine.pictaviensis.regnum/type: "raspberry-pi-4b-large"
-      storage.pictaviensis.regnum/ssd-speed: "fast"
+    nodeSelector: {}
     persistence:
       existingClaim: "postgresql"
     resources:
@@ -162,8 +172,7 @@ redis:
   containerPorts:
     postgresql: 6379
   master:
-    nodeSelector:
-      storage.pictaviensis.regnum/ssd-speed: "fast"
+    nodeSelector: {}
     persistence:
       existingClaim: "redis"
     resources:
