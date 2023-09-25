@@ -103,6 +103,16 @@ nextcloud:
     successfulJobsHistoryLimit: 1
     restartPolicy: OnFailure
     nodeSelector: {}
+  batchProcessing:
+    restartPolicy: OnFailure
+    nodeSelector: {}
+    resources:
+      limits:
+        cpu: 4
+        memory: "2Gi"
+      requests:
+        cpu: 1
+        memory: "1Gi"
 
 
 # -- Parameters group for nginx sidecar installation.

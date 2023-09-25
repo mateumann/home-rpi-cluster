@@ -10,7 +10,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ include "nextcloud.fullname" . }}
-  maxReplicas: {{ .Values.nextcloud.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.nextcloud.autoscaling.minReplicas | default 1 }}
+  maxReplicas: {{ .Values.nextcloud.autoscaling.maxReplicas | default 4 }}
   {{- with .Values.nextcloud.autoscaling.behavior }}
   behavior:
     {{- toYaml . | nindent 4 }}

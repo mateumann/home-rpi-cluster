@@ -41,8 +41,8 @@ spec:
                   cpu: 2500m
                   memory: 2048Mi
                 requests:
-                  cpu: 100m
-                  memory: 256Mi
+                  cpu: 0.5
+                  memory: 512Mi
               volumeMounts:
                 - name: fpm-config
                   mountPath: /usr/local/etc/php-fpm.d
