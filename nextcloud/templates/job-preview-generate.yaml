@@ -1,0 +1,93 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "nextcloud.fullname" . }}-preview-generate
+  labels:
+    {{- include "nextcloud.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 6
+  completionMode: NonIndexed
+  completions: 1
+  parallelism: 1
+  template:
+    spec:
+      {{- with .Values.global.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+        - name: nextcloud
+          image: nextcloud:27.0.2-fpm-alpine
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: false
+          command:
+            - /bin/sh
+            - -c
+            - date && apk add sudo perl &&
+                  echo -n "Executing Nextcloud's preview generate job at " &&
+                  date && sudo -u '#82' php -d memory_limit=-1  -f
+                  /var/www/html/occ preview:generate-all -vvv &&
+                  echo "Done" && date
+          {{- with .Values.nextcloud.batchProcessing.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: fpm-config
+              mountPath: /usr/local/etc/php-fpm.d
+            - name: nextcloud-app
+              mountPath: /var/www/html
+            - name: nextcloud-data
+              mountPath: /var/www/html/data
+          env:
+            - name: REDIS_HOST
+              value: nextcloud-redis-master  # FIXME
+            - name: POSTGRES_HOST
+              value: nextcloud-postgres  # FIXME
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.auth.database | quote }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecret | quote }}
+                  key: password
+            - name: PHP_UPLOAD_LIMIT
+              value: 5120M
+            - name: PHP_POST_LIMIT
+              value: 5120M
+            - name: NEXTCLOUD_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-admin
+                  key: username
+            - name: NEXTCLOUD_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-admin
+                  key: password
+            - name: OVERWRITEHOST
+              value: cloud.neumanny.live
+            - name: OVERWRITEPROTOCOL
+              value: https
+      volumes:
+        - name: fpm-config
+          configMap:
+            name: fpm-batch-processing
+        - name: nextcloud-app
+          persistentVolumeClaim:
+            claimName: nextcloud-app
+        - name: nextcloud-data
+          persistentVolumeClaim:
+            claimName: nextcloud-data
+      {{- with .Values.nextcloud.batchProcessing.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: {{ .Values.nextcloud.batchProcessing.restartPolicy | default "OnFailure" | quote }}
+
